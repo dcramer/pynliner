@@ -4,7 +4,7 @@
 from setuptools import setup
 
 install_requires = [
-    'BeautifulSoup >=3.2.1,<4.0',
+    'BeautifulSoup4',
     'cssutils >=0.9.7',
 ]
 

@@ -25,19 +25,34 @@ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
 EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR 
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
+from __future__ import absolute_import, unicode_literals, print_function
 
 __version__ = "0.5.1"
 
-import re
-import urlparse
-import urllib2
 import cssutils
-from BeautifulSoup import BeautifulSoup, Comment
-from soupselect import select
+import re
+import sys
+from bs4 import BeautifulSoup, Comment
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
+if PY3:
+    from urllib.request import urlopen
+    from urllib.parse import urljoin
+    binary_type = bytes
+    text_type = str
+
+else:
+    from urllib2 import urlopen
+    from urlparse import urljoin
+
+    binary_type = str
+    text_type = unicode
 
 
 class Pynliner(object):
@@ -123,7 +138,7 @@ class Pynliner(object):
     def _get_url(self, url):
         """Returns the response content from the given url
         """
-        return urllib2.urlopen(url).read()
+        return urlopen(url).read()
 
     def _get_soup(self):
         """Convert source string to BeautifulSoup object. Sets it to self.soup.
@@ -166,7 +181,7 @@ class Pynliner(object):
 
             # Convert the relative URL to an absolute URL ready to pass to urllib
             base_url = self.relative_url or self.root_url
-            url = urlparse.urljoin(base_url, url)
+            url = urljoin(base_url, url)
 
             self.style_string += self._get_url(url)
             tag.extract()
@@ -213,7 +228,7 @@ class Pynliner(object):
             selectors = rule.selectorText.split(',')
             elements = []
             for selector in selectors:
-                elements += select(self.soup, selector)
+                elements += self.soup.select(selector)
             # build prop_list for each selected element
             for elem in elements:
                 if elem not in elem_prop_map:
@@ -242,15 +257,15 @@ class Pynliner(object):
                 elem['style'] = u'%s; %s' % (style_declaration.cssText.replace('\n', ' '), elem['style'])
             else:
                 elem['style'] = style_declaration.cssText.replace('\n', ' ')
-        
+
     def _get_output(self):
         """Generate Unicode string of `self.soup` and set it to `self.output`
 
         Returns self.output
         """
-        self.output = unicode(self.soup)
+        self.output = text_type(self.soup)
         return self.output
-    
+
     def _clean_output(self):
         """Clean up after BeautifulSoup's output.
         """

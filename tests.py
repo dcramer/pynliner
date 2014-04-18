@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import, unicode_literals, print_function
+
 import unittest
 import pynliner
-import StringIO
 import logging
 import cssutils
 import mock
 from pynliner import Pynliner
+
+try:
+    from io import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 
 class Basic(unittest.TestCase):
@@ -248,7 +254,7 @@ class LogOptions(unittest.TestCase):
         self.log = logging.getLogger('testlog')
         self.log.setLevel(logging.DEBUG)
 
-        self.logstream = StringIO.StringIO()
+        self.logstream = StringIO()
         handler = logging.StreamHandler(self.logstream)
         log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         formatter = logging.Formatter(log_format)
